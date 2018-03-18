@@ -13,7 +13,7 @@ monteCarlo <- function(home_mus, home_sds, away_mus, away_sds, n=1000, elo_home=
                 margin <- margin[margin != 0]
                 if (length(margin) < n)
                 {
-                        margin <- c(margin, monteCarlo(home_mus, home_sds, away_mus, away_sds, n - length(margin), elo_home, elo_away))
+                        margin <- c(margin, monteCarlo(home_mus, home_sds, away_mus, away_sds, n - length(margin), elo_home, elo_away, allowDraw))
                 }
         }
         
