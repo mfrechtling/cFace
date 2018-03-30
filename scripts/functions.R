@@ -22,7 +22,7 @@ monteCarlo <- function(home_mus, home_sds, away_mus, away_sds, n=1000, elo_home=
 
 weight.func <- function(x)
 {
-        return(x^3)
+        return((1000^x)/1000)
 }
 
 weight.mean <- function(x)
