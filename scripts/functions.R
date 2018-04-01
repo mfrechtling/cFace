@@ -20,22 +20,55 @@ monteCarlo <- function(home_mus, home_sds, away_mus, away_sds, n=1000, elo_home=
         return(margin)
 }
 
+weight.func <- function(x)
+{
+        return((1000^x)/1000)
+}
+
+weight.mean <- function(x)
+{
+        w <- seq(1/length(x), 1, 1/length(x))
+        w <- weight.func(w)
+        w <- w / sum(w)
+        return(weighted.mean(x, w))
+}
+
+weight.var <- function(x)
+{
+        w <- seq(1/length(x), 1, 1/length(x))
+        w <- weight.func(w)
+        w <- w / sum(w)
+        return(weighted.var(x, w))
+}
+
+weighted.var <- function(x, w, na.rm = FALSE)
+{
+        if (na.rm) { 
+                w <- w[i <- !is.na(x)] 
+                x <- x[i] 
+        } 
+        sum.w <- sum(w) 
+        sum.w2 <- sum(w^2) 
+        mean.w <- sum(x * w) / sum(w) 
+        (sum.w / (sum.w^2 - sum.w2)) * sum(w * (x - mean.w)^2, na.rm = na.rm) 
+}
+
 get_stats_df <- function(league)
 {
         tokens <- c("./data", league, "scores.csv")
         scores <- read.csv(paste(tokens, collapse = "/"), header=TRUE)
-        away_scored_mean <- aggregate(scores[,4], list(scores$Away), mean)
-        away_scored_var <- aggregate(scores[,4], list(scores$Away), var)
+        away_scored_mean <- aggregate(scores[,4], list(scores$Away), weight.mean)
+        away_scored_var <- aggregate(scores[,4], list(scores$Away), weight.var)
         
-        away_conceeded_mean <- aggregate(scores[,2], list(scores$Away), mean)
-        away_conceeded_var <- aggregate(scores[,2], list(scores$Away), var)
+        away_conceeded_mean <- aggregate(scores[,2], list(scores$Away), weight.mean)
+        away_conceeded_var <- aggregate(scores[,2], list(scores$Away), weight.var)
         
         
-        home_scored_mean <- aggregate(scores[,2], list(scores$Home), mean)
-        home_scored_var <- aggregate(scores[,2], list(scores$Home), var)
+        home_scored_mean <- aggregate(scores[,2], list(scores$Home), weight.mean)
+        home_scored_var <- aggregate(scores[,2], list(scores$Home), weight.var)
         
-        home_conceeded_mean <- aggregate(scores[,4], list(scores$Home), mean)
-        home_conceeded_var <- aggregate(scores[,4], list(scores$Home), var)
+        home_conceeded_mean <- aggregate(scores[,4], list(scores$Home), weight.mean)
+        home_conceeded_var <- aggregate(scores[,4], list(scores$Home), weight.var)
         
         stats_df <- data.frame(home_scored_mean$x, 
                                home_scored_var$x, 
