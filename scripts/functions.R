@@ -1,7 +1,7 @@
 monteCarlo <- function(home_mus, home_sds, away_mus, away_sds, n=1000, elo_home=1300, elo_away=1300, allowDraw=TRUE)
 {
-        home_coeff = elo_home / (elo_home + elo_away)
-        away_coeff = elo_away / (elo_home + elo_away)
+        home_coeff = elo_home
+        away_coeff = elo_away
         components <- sample(1:2, prob=c(home_coeff, away_coeff), size=n, replace=TRUE)
         
         home_samples <- rnorm(n, mean=home_mus[components], sd=home_sds[components])
@@ -160,16 +160,32 @@ get_results <- function(home, away, stats_df, elo_df, n=1000, allowDraw=TRUE)
         return(results_df)
 }
 
-get_prob <- function(league, home, away, allowDraw=TRUE)
+get_prob <- function(league, allowDraw=TRUE)
 {
-        tokens <- c("./data", league, "update.r")
+        tokens <- c("./data", league, "update.R")
         source(paste(tokens, collapse = "/"))
         
         updateScores()
         updateElo()
+
+        tokens <- c("./data", league, "input.csv")
+        input <- read.csv(paste(tokens, collapse = "/"), stringsAsFactors=FALSE, header=TRUE)
         
         stats_df <- get_stats_df(league)
         elo_df <- get_elo_df(league)
-        
-        res <- get_results(home, away, stats_df, elo_df, n=1000000, allowDraw)
+
+        results_df <- data.frame(home=character(),
+                                 away=character(),
+                                 home_odds=double(),
+                                 home_system_odds=double(),
+                                 away_odds=double(),
+                                 away_system_odds=double(),
+                                 stringsAsFactors=FALSE)
+
+        for (i in 1:(length(input) - 1))
+        {
+            res <- get_results(input[i, 'home'], input[i, 'away'] , stats_df, elo_df, n=1000000, allowDraw)
+            results_df[i,1:6] <- c(input[i, 'home'], input[i, 'away'], input[i, 'home_odds'], res[1, 'home_odds'], input[i, 'away_odds'], res[1, 'away_odds'])
+        }
+        write.table(results_df, "results.csv", row.names=FALSE, sep=",", quote=FALSE)
 }
