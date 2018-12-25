@@ -1,13 +1,13 @@
 monteCarlo <- function(home_mus, home_sds, away_mus, away_sds, n=1000, elo_home=1300, elo_away=1300, allowDraw=TRUE)
 {
-        home_coeff = elo_home
-        away_coeff = elo_away
+        home_coeff = elo_home / (elo_home + elo_away) 
+        away_coeff = elo_away / (elo_home + elo_away)
         components <- sample(1:2, prob=c(home_coeff, away_coeff), size=n, replace=TRUE)
         
         home_samples <- rnorm(n, mean=home_mus[components], sd=home_sds[components])
         away_samples <- rnorm(n, mean=away_mus[components], sd=away_sds[components])
         
-        margin <- round(home_samples - away_samples, digits=0)
+        margin <- round((home_samples + 0) - away_samples, digits=0)
         if (!allowDraw)
         {
                 margin <- margin[margin != 0]
@@ -22,7 +22,8 @@ monteCarlo <- function(home_mus, home_sds, away_mus, away_sds, n=1000, elo_home=
 
 weight.func <- function(x)
 {
-        return((1000^x)/1000)
+        #return((1000^x)/1000)
+    return(1*x)
 }
 
 weight.mean <- function(x)
@@ -182,9 +183,9 @@ get_prob <- function(league, allowDraw=TRUE)
                                  away_system_odds=double(),
                                  stringsAsFactors=FALSE)
 
-        for (i in 1:(length(input) - 1))
+        for (i in 1:nrow(input))
         {
-            res <- get_results(input[i, 'home'], input[i, 'away'] , stats_df, elo_df, n=1000000, allowDraw)
+            res <- get_results(input[i, 'home'], input[i, 'away'] , stats_df, elo_df, n=10000000, allowDraw)
             results_df[i,1:6] <- c(input[i, 'home'], input[i, 'away'], input[i, 'home_odds'], res[1, 'home_odds'], input[i, 'away_odds'], res[1, 'away_odds'])
         }
         write.table(results_df, "results.csv", row.names=FALSE, sep=",", quote=FALSE)
