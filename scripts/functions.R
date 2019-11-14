@@ -170,7 +170,7 @@ get_prob <- function(league, allowDraw=TRUE)
 
         tokens <- c("./data", league, "input.csv")
         input <- read.csv(paste(tokens, collapse = "/"), stringsAsFactors=FALSE, header=TRUE)
-        
+        print(input)        
         stats_df <- get_stats_df(league)
         elo_df <- get_elo_df(league)
 
@@ -182,7 +182,7 @@ get_prob <- function(league, allowDraw=TRUE)
                                  away_system_odds=double(),
                                  stringsAsFactors=FALSE)
 
-        for (i in 1:(length(input) - 1))
+        for (i in 1:nrow(input))
         {
             res <- get_results(input[i, 'home'], input[i, 'away'] , stats_df, elo_df, n=1000000, allowDraw)
             results_df[i,1:6] <- c(input[i, 'home'], input[i, 'away'], input[i, 'home_odds'], res[1, 'home_odds'], input[i, 'away_odds'], res[1, 'away_odds'])
